@@ -32,6 +32,16 @@ func main() {
 		MaxAge:           300,
 	}))
 
+	// new router to mount so that full path /v1/healthz
+	// so that there is 2 version if one is broken after some change
+	// for REST API
+	// It should respond if the server is alive and running
+	v1Router := chi.NewRouter()
+	v1Router.Get("/healthz", handlerReadiness)
+	v1Router.Get("/err", handlerErr)
+
+	router.Mount("/v1", v1Router)
+
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + portString,
