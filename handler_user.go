@@ -38,5 +38,11 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	respondWithJSON(w, 201, databaseUserToUser(user))
+}
+
+// we want to pass additional argument, so we make a method
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
+	// with middleware
 	respondWithJSON(w, 200, databaseUserToUser(user))
 }
