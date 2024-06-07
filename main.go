@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Hultyrhik/rssAggregator/internal/database"
 	"github.com/go-chi/chi"
@@ -22,6 +23,7 @@ type apiConfig struct {
 }
 
 func main() {
+
 	// loads .env file
 	godotenv.Load(".env")
 
@@ -44,12 +46,17 @@ func main() {
 	}
 
 	// convert conn to needed type
-	queries := database.New(conn)
+	db := database.New(conn)
 
 	// api Config now can be passed to handler to use DB after this struct
 	apiCfg := apiConfig{
-		DB: queries,
+		DB: db,
 	}
+
+	// needs to start on new goroutine so it does not
+	// interrupt main flow
+	// startScraping is not going to return - it runs forever
+	go startScraping(db, 10, time.Minute)
 
 	router := chi.NewRouter()
 
@@ -86,6 +93,8 @@ func main() {
 		Addr:    ":" + portString,
 	}
 	log.Printf("Server staring on port %v", portString)
+
+	// where server blocks and waits forever for incoming requests
 	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
